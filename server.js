@@ -8,8 +8,9 @@
     var bodyParser = require('body-parser');
     var session = require('express-session');
 
-    var https = require('https'),
-    fs = require('fs');
+    var https = require('https');
+    var fs = require('fs');
+    var ejs = require('ejs');
 
     var TwitterStrategy = require('passport-twitter').Strategy;
     var FacebookStrategy = require('passport-facebook').Strategy;
@@ -26,17 +27,20 @@
     // all environments
     app.set('port', process.env.PORT || Configuration.server.port);
     app.set('views', path.join(__dirname, 'views'));
+    app.use(express.static(path.join(__dirname, 'views')));
+
+    app.engine('.html', ejs.renderFile);
+    app.set('view engine', 'ejs');
 
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({
         extended: true
     }));
+
     app.use(passport.initialize());
     app.use(session({
         secret: 'colanRulez'
     }));
-
-    app.use(express.static(path.join(__dirname, 'public')));
 
     app.set('trust proxy', 1) // trust first proxy
 
@@ -81,7 +85,7 @@
     });
 
     app.get(Configuration.server.states.general, function(req, res){
-        res.sendfile(Configuration.server.views.auth);
+        res.render(Configuration.server.views.auth);
     });
 
     //GOOGLE
@@ -217,10 +221,10 @@
         rejectUnauthorized: Configuration.server.ssl.rejectUnauthorized
     };
 
-    http.createServer(app).listen(app.get('port'), function(){
+    http.createServer(app).listen(app.get('port'), function() {
         out.print('Express server listening on port ', app.get('port'));
     });
-    var secureServer = https.createServer(sslOptions, app).listen(Configuration.server.ssl.port, function(){
+    var secureServer = https.createServer(sslOptions, app).listen(Configuration.server.ssl.port, function() {
         out.print('Secure Express server listening on port', Configuration.server.ssl.port);
     });
 }());
