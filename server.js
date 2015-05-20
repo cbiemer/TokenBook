@@ -84,6 +84,10 @@
         res.send(Configuration.server.res.error);
     });
 
+    app.get(Configuration.server.states.login, function(req, res) {
+       res.render(Configuration.server.views.login); 
+    });
+
     app.get(Configuration.server.states.general, function(req, res){
         res.render(Configuration.server.views.auth);
     });
@@ -215,16 +219,14 @@
 
     var sslOptions = {
         key: fs.readFileSync(Configuration.server.ssl.key),
-        csr: fs.readFileSync(Configuration.server.ssl.csr),
-        ca: fs.readFileSync(Configuration.server.ssl.csr),
-        requestCert: Configuration.server.ssl.requestCert,
-        rejectUnauthorized: Configuration.server.ssl.rejectUnauthorized
+        cert: fs.readFileSync(Configuration.server.ssl.crt),
     };
 
     http.createServer(app).listen(app.get('port'), function() {
         out.print('Express server listening on port ', app.get('port'));
     });
-    var secureServer = https.createServer(sslOptions, app).listen(Configuration.server.ssl.port, function() {
+
+    https.createServer(sslOptions, app).listen(Configuration.server.ssl.port, function() {
         out.print('Secure Express server listening on port', Configuration.server.ssl.port);
     });
 }());
