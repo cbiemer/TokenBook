@@ -227,6 +227,6 @@
     });
 
     https.createServer(sslOptions, app).listen(Configuration.server.ssl.port, function() {
-        out.print('Secure Express server listening on port', Configuration.server.ssl.port);
+        out.print('Secure Express server listening on port ', Configuration.server.ssl.port);
     });
 }());
