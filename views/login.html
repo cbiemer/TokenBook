@@ -1,1 +1,45 @@
+<html>
+<head>
+	<link rel="stylesheet" href="css/bootstrap.min.css" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+	<script src="js/bootstrap.js"></script>
+</head>
+<body>
+
+<form className="loginForm form-signin" onSubmit='handleLoginSubmit();return false;'>
+	<h3 className="form-signin-heading">Link Accounts</h3>
+	<div className="inputContainer">
+        <input id="esaUsername" className="form-control" type="text" placeholder="esa username" required />
+        <input id="socialApp" className="form-control" type="text" placeholder="social app" required />
+    </div>
+   	<button className="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+</form>
+
+<script>
+function handleLoginSubmit(){
+	var esaUsername = document.getElementById('esaUsername').value;
+	var socialApp = document.getElementById('socialApp').value;
+
+	var userData = {"esaUsername": esaUsername, "socialApp": socialApp};
+    
+    $.ajax({
+      url: "http://localhost:3000/getLinkedAccounts",
+      dataType: 'json',
+      type: 'POST',
+      data: userData,
+      success: function(data) {
+        
+        console.log(data);
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(xhr, status, err.toString());
+      }.bind(this)
+    });
+}
+
+</script>
+</body>
+</html>
+=======
 LOGIN PAGE
+>>>>>>> a054ca3693ebecb381834ab67f0597a8e2de23e0
