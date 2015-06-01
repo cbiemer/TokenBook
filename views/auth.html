@@ -63,7 +63,7 @@
                             <a href="https://dev.ipipeline.io/auth/google">
                                 <img src="images/google.png"/>
                             </a>
-                            <a href="http://www.linkedin.com">
+                            <a href="https://dev.ipipeline.io/auth/linkedin">
                                 <img src="images/linkedin.png"/>
                             </a>
                             <a href="https://dev.ipipeline.io/auth/twitter">
@@ -72,6 +72,8 @@
                         </p>
                     </div>
 
+				
+					
                     <div class="mastfoot">
                         <div class="inner">
                             <font color="#EE7600" size="1">© 2015 iPipeline - All Rights Reserved</font>
@@ -85,7 +87,23 @@
         </div>
 
         <script src="sparkle-cursor.js" type="text/javascript"></script>
-
+		<script>
+					window.onload = function () {
+						$.ajax({
+							url: "https://dev.ipipeline.io/getLinkedAccounts",
+							dataType: 'json',
+							type: 'POST',
+							data: {'rsaUserName':'hgott123'},
+							success: function(data) {
+        
+								console.log(data);
+						}.bind(this),
+							error: function(xhr, status, err) {
+							console.error(xhr, status, err.toString());
+						}.bind(this)
+						});	
+					}
+		</script>
         <!-- Bootstrap core JavaScript
         ================================================== -->
         <!-- Placed at the end of the document so the pages load faster -->

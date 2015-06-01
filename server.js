@@ -17,12 +17,19 @@
     var GitHubStrategy = require('passport-github').Strategy;
     var GoogleStrategy =    require('passport-google-oauth').OAuth2Strategy;
     var ForceDotComStrategy = require('passport-forcedotcom').Strategy;
+    var LinkedInStrategy = require('passport-linkedin').Strategy;
 
     var Configuration = require('./config');
-    var MongoDB = require('./mongodb');
+    var cacheLayer = require('./cacheLayer');
+    var MongoDB = require('./db/mongodb');
+    var SQLDB = require('./db/sqldb');
+    var DBController = MongoDB;
     var out = require('./out');
 
     var app = express();
+//////////Test Data////////////
+    var sampleData = {'application':'DocFast', 'gaid':'123', 'rsaUserName':'hgott123'};
+//////////////////////////////
 
     // all environments
     app.set('port', process.env.PORT || Configuration.server.port);
@@ -52,32 +59,10 @@
         done(null, obj);
     });
 
-    passport.use(new FacebookStrategy({
-            clientID: Configuration.facebook.appID,
-            clientSecret: Configuration.facebook.appSecret,
-            consumerKey: Configuration.facebook.appID,
-            consumerSecret: Configuration.facebook.appSecret,
-            callbackURL: Configuration.facebook.callBack
-        },
-        function (accessToken, refreshToken, profile, done) {
-            process.nextTick(function () {
-                out.printDev(profile);
-                return done(null, profile);
-            });
-        }
-    ));
-
-    app.get(Configuration.facebook.express.auth, passport.authenticate(Configuration.facebook.name));
-
-    app.get(Configuration.facebook.express.callBack, 
-        passport.authenticate(Configuration.facebook.name, { 
-        	successRedirect: Configuration.server.states.success,
-            failureRedirect: Configuration.server.states.error
-        })
-    );
-
+    //on success from callback
     app.get(Configuration.server.states.success, function(req, res){
-        res.send(Configuration.server.res.success);
+        //refresh to main page
+        res.redirect('/');
     });
 
     app.get(Configuration.server.states.error, function(req, res){
@@ -92,6 +77,35 @@
         res.render(Configuration.server.views.auth);
     });
 
+    ////////////FaceBook///////////////
+    passport.use(new FacebookStrategy({
+            clientID: Configuration.facebook.appID,
+            clientSecret: Configuration.facebook.appSecret,
+            consumerKey: Configuration.facebook.appID,
+            consumerSecret: Configuration.facebook.appSecret,
+            callbackURL: Configuration.facebook.callBack
+        },
+        function (accessToken, refreshToken, profile, done) {
+            process.nextTick(function () {
+
+                DBController.addNewUser(sampleData.application, sampleData.gaid, 
+                                    sampleData.rsaUserName, profile.provider, profile.id);
+
+                cacheLayer.flushCache();
+                return done(null, profile);
+            });
+        }
+    ));
+
+    app.get(Configuration.facebook.express.auth, passport.authenticate(Configuration.facebook.name));
+
+    app.get(Configuration.facebook.express.callBack, 
+        passport.authenticate(Configuration.facebook.name, { 
+        	successRedirect: Configuration.server.states.success,
+            failureRedirect: Configuration.server.states.error
+        })
+    );
+
     //GOOGLE
     passport.use(new GoogleStrategy({
         clientID: Configuration.google.appID,
@@ -101,7 +115,9 @@
         },
          function(accessToken, refreshToken, profile, done) {
             process.nextTick(function () {
-                out.printDev(profile);
+                DBController.addNewUser(sampleData.application, sampleData.gaid, 
+                                    sampleData.rsaUserName, profile.provider, profile.id);
+                cacheLayer.flushCache();
                 return done(null, profile);
             });
         }
@@ -123,6 +139,34 @@
         })
     );
 
+    //LinkedIn
+    passport.use(new LinkedInStrategy({
+            consumerKey: Configuration.linkedin.appID,
+            consumerSecret: Configuration.linkedin.appSecret,
+            callbackURL: Configuration.linkedin.callBack
+        },
+        function(token, tokenSecret, profile, done) {
+            process.nextTick(function () {
+                DBController.addNewUser(sampleData.application, sampleData.gaid, 
+                                    sampleData.rsaUserName, profile.provider, profile.id);
+                cacheLayer.flushCache();
+                return done(null, profile);
+            });
+        }
+    ));
+
+    app.get(Configuration.linkedin.express.auth,
+        passport.authenticate(Configuration.linkedin.name));
+
+    app.get(Configuration.linkedin.express.callBack, 
+        passport.authenticate(Configuration.linkedin.name, { 
+            failureRedirect: Configuration.server.states.error}),
+        function(req, res) {
+            
+            console.log('success at linked in');
+            res.redirect('/');
+        });
+
     //GITHUB
     passport.use(new GitHubStrategy({
             clientID: Configuration.github.appID,
@@ -131,13 +175,16 @@
         },
         function (accessToken, refreshToken, profile, done) {
             process.nextTick(function () {
-                out.printDev(profile);
+                DBController.addNewUser(sampleData.application, sampleData.gaid, 
+                                    sampleData.rsaUserName, profile.provider, profile.id);
+                cacheLayer.flushCache();
                 return done(null, profile);
             });
         }
     ));
 
 
+    //TWITTER
     // Use the TwitterStrategy within Passport.
     //     Strategies in passport require a `verify` function, which accept
     //     credentials (in this case, a token, tokenSecret, and Twitter profile), and
@@ -152,7 +199,9 @@
         function(token, tokenSecret, profile, done) {
             // asynchronous verification, for effect...
             process.nextTick(function () {
-                out.printDev(profile);
+                DBController.addNewUser(sampleData.application, sampleData.gaid, 
+                                    sampleData.rsaUserName, profile.provider, profile.id);
+                cacheLayer.flushCache();
                 // To keep the example simple, the user's Twitter profile is returned to
                 // represent the logged-in user.    In a typical application, you would want
                 // to associate the Twitter account with a user record in your database,
@@ -169,6 +218,7 @@
     app.get(Configuration.twitter.express.auth,
         passport.authenticate(Configuration.twitter.name),
         function(req, res){
+            //console.log("inside get auth twitter")
             // The request will be redirected to Twitter for authentication, so this
             // function will not be called.
         });
@@ -180,7 +230,8 @@
     //     which, in this example, will redirect the user to the home page.
     app.get(Configuration.twitter.express.callBack,
         passport.authenticate(Configuration.twitter.name, {
-            successRedirect: Configuration.server.states.success,
+            successRedirect: Configuration.server.states.success, //called as redirect
+            //successRedirect: 'twitter success static', 
             failureRedirect: Configuration.server.states.error
         })
     );
@@ -194,13 +245,16 @@
         })
     );
 
+    //FORCEDOT
     passport.use(new ForceDotComStrategy({
             clientID: Configuration.forcedotcom.appID,
             clientSecret: Configuration.forcedotcom.appSecret,
             scope: Configuration.forcedotcom.scope,
             callbackURL: Configuration.forcedotcom.callBack
         }, function verify(token, refreshToken, profile, done) {
-            out.printDev(profile);
+            DBController.addNewUser(sampleData.application, sampleData.gaid, 
+                                    sampleData.rsaUserName, profile.provider, profile.id);
+            cacheLayer.flushCache();
             return done(null, profile);
     	}
     ));
@@ -216,6 +270,33 @@
         //    res.render("index",checkSession(req));
         }
     );
+
+
+
+    app.post('/getLinkedAccounts', function(req, res) {
+        var rsaUserName = req.body.rsaUserName;
+
+        cacheLayer.getCachedAccounts(rsaUserName, function(cachedAccounts){
+            console.log("returned accounts ", cachedAccounts);
+            //linkedAccounts = cachedAccounts;
+
+            if(cachedAccounts === undefined){
+                DBController.getLinkedAccounts(rsaUserName, function(mongoAccounts){
+                    console.log(mongoAccounts);
+
+                    if(mongoAccounts.length != 0){
+                        console.log("caching");
+                        cacheLayer.cacheLinkedAccounts(rsaUserName, mongoAccounts);
+                    }
+                    res.send(mongoAccounts);
+                });
+            } else {
+                res.send(cachedAccounts);
+            }
+        });
+    });
+
+///////////////////////////////
 
     var sslOptions = {
         key: fs.readFileSync(Configuration.server.ssl.key),

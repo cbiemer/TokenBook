@@ -1,0 +1,105 @@
+{
+	"facebook": {
+		"name": "facebook",
+		"appID": "610598449076137",
+		"appSecret": "58d3fa358fde73d0e1bf30df47a62e0b",
+		"callBack": "https://dev.ipipeline.io/auth/facebook/callback",
+		"express": {
+			"auth": "/auth/facebook",
+			"callBack": "/auth/facebook/callback"
+		} 
+	},
+
+	"google": {
+		"name": "google",
+		"appID": "912393781618-ph34dube8bve1astofqnlipooi6b3tek.apps.googleusercontent.com",
+		"appSecret": "NYvQ2ugK1jMixwAGV4NmoH_A",
+		"callBack":  "https://dev.ipipeline.io/auth/google/callback",
+		"scope": "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
+		"express": {
+			"auth": "/auth/google",
+			"callBack": "/auth/google/callback"
+		}
+	},
+
+	"github": {
+		"name": "github",
+		"appID": "your client id",
+		"appSecret": "your client secret",
+		"callBack": "https://dev.ipipeline.io/auth/github/callback",
+		"express": {
+			"auth": "/auth/github",
+			"callBack": "/auth/github/callback"
+		}
+	},
+	
+	"linkedin": {
+		"name": "linkedin",
+		"appID": "775xqp6ev9k0sg",
+		"appSecret": "cdUTdVtEcePn4p0E",
+		"callBack": "https://dev.ipipeline.io/auth/linkedin/callback",
+		"express": {
+			"auth": "/auth/linkedin",
+			"callBack": "/auth/linkedin/callback"
+		}
+	},
+
+	"twitter": {
+		"name": "twitter",
+		"appID": "w0Wp4iiXIO3T8UB0bTT7256wy",
+		"appSecret": "yYVTMp9EY48yUzC72WfYRlTjYMPWYYT2TpynjyA4X9TD0RCMJ1",
+		"callBack": "https://dev.ipipeline.io/auth/twitter/callback",
+		"express": {
+			"auth": "/auth/twitter",
+			"callBack": "/auth/twitter/callback"
+		}
+	},
+
+	"forcedotcom": {
+		"name": "forcedotcom",
+		"appID": "3MVG9fMtCkV6eLhcCo2Scf4Ng17D3b11bTZBqqKD7RoKhFNr8DngCqBPm_1Njwvfu6qr6WlKgJtvTajg_.49T",
+		"appSecret": "4659919972171335551",
+		"scope": ["id"],
+		"callBack": "https://dev.ipipeline.io/auth/forcedotcom/callback",
+		"express": {
+			"auth": "/auth/forcedotcom",
+			"callBack": "/auth/forcedotcom/callback"
+		}
+	},
+
+	"server": {
+		"port": 80,
+		"ssl": {
+			"port": 443,
+			"key": "./ssl/server.key",
+			"csr": "./ssl/server.csr",
+			"crt": "./ssl/server.crt",
+			"requestCert": true,
+			"rejectUnauthorized": false
+		},
+		"res": {
+			"success": "success logged in",
+			"error": "error logged in"
+		},
+		"states": {
+			"success": "/success",
+			"error": "/error",
+			"general": "/",
+			"login": "/login"
+		},
+		"views": {
+			"auth": "./auth.html",
+			"login": "./login.html"
+		}
+	},
+	"mongo": {
+		"url": "mongodb://localhost/agent:27017",
+		"model": "agents"
+	},
+	"cache": {
+		"url": "localhost:11211",
+		"baseURLKey": 86400,
+		"keyExpirationTime": "https://dev.ipipeline.io/user/"
+	},
+	"dev": true
+}
